@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --partition=debug
-#SBATCH --mem-per-cpu=2G
+#SBATCH --mem-per-cpu=4G
 #SBATCH --job-name=hw3_prep
 #SBATCH --output=hw3_prep_%j.out
 #SBATCH --error=hw3_prep_%j.err
@@ -15,8 +15,15 @@ ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 cd "$ROOT"
 echo "Node: $(hostname)   $(python3 --version)"
 
-python3 -c "import grpc, grpc_tools" 2>/dev/null \
-  || python3 -m pip install --user --quiet grpcio grpcio-tools
+# RCE compute nodes run Python 3.6.8 with an old pip that cannot use manylinux2014
+# wheels and falls back to compiling grpcio from source (runs out of memory).
+# -> upgrade pip (21.3.1 is the last for py3.6) and install prebuilt wheels only:
+#    grpcio / grpcio-tools 1.48.2 are the last releases with cp36 wheels.
+python3 -c "import grpc, grpc_tools" 2>/dev/null || {
+  python3 -m pip install --user --quiet --upgrade "pip<22"
+  python3 -m pip install --user --quiet --only-binary=:all: \
+      "grpcio==1.48.2" "grpcio-tools==1.48.2" "protobuf<4"
+}
 
 echo "== Section 3 P2: generate stubs"
 cd "$ROOT/section3_q2_food_ordering"
