@@ -1,4 +1,5 @@
 #!/bin/bash
+#SBATCH --partition=debug
 #SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=mr_triangles
 #SBATCH --output=triangles_%j.out

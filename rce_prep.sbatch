@@ -1,4 +1,5 @@
 #!/bin/bash
+#SBATCH --partition=debug
 #SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=hw3_prep
 #SBATCH --output=hw3_prep_%j.out
