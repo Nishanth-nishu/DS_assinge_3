@@ -13,9 +13,10 @@ correctness verification and results.
 ssh <user>@rce.iiit.ac.in            # IIIT network or VPN
 git clone https://github.com/Nishanth-nishu/DS_assinge_3.git && cd DS_assinge_3
 
-# Section 1 Q3
-cd section1_q3_triangle_counting && ./run_tests.sh && ./make_datasets.sh && sbatch run_distributed.sbatch
-
-# Section 3 P2
-cd ../section3_q2_food_ordering && ./setup.sh && python3 test_food_ordering.py && sbatch run_demo.sbatch
+bash rce_run_all.sh            # only submits SLURM jobs (nothing runs on the login node)
+squeue -u $USER                # wait until empty
+bash rce_run_all.sh collect    # print results
 ```
+`rce_prep.sbatch` (installs gRPC if needed, generates stubs, runs the correctness tests,
+builds the datasets) runs first on a compute node; the triangle-counting scaling runs
+(1/2/4/8 tasks) and the 3-node gRPC demo + tests start only after it succeeds.
