@@ -43,5 +43,9 @@ for f in server restaurant_pizza restaurant_burger customer_alice customer_bob; 
   echo "================= $f ($LOG/$f.log) ================="; cat "$LOG/$f.log"
 done
 
-# Automated correctness tests against the live cluster server are also possible:
-#   python3 test_food_ordering.py <server-node>:50051
+# Automated correctness + concurrency tests, client on another node than the server
+echo "================= test_food_ordering.py ($CUST -> $SERVER:$((PORT+1))) ================="
+step "$SERVER" python3 -u server.py "0.0.0.0:$((PORT+1))" --quiet &
+TP=$!; sleep 5
+step "$CUST" python3 -u test_food_ordering.py "$SERVER:$((PORT+1))" 2>&1 | tee "$LOG/tests.log"
+kill "$TP" 2>/dev/null; wait "$TP" 2>/dev/null
