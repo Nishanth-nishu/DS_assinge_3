@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package food;
+
+// ---------------------------------------------------------------------------
+// Food Ordering Service
+//   Required RPCs : ListRestaurants, PlaceOrder, GetOrderStatus,
+//                   UpdateOrderStatus, SubscribeToOrderUpdates
+//   Extra RPCs    : CancelOrder              (customer "Cancel Order" option)
+//                   ListRestaurantOrders     (restaurant "View Pending Orders")
+//                   SubscribeToNewOrders     (restaurant gets new orders pushed)
+// ---------------------------------------------------------------------------
+service FoodOrderingService {
+  rpc ListRestaurants(RestaurantRequest) returns (RestaurantResponse);
+  rpc PlaceOrder(OrderRequest) returns (OrderResponse);
+  rpc GetOrderStatus(OrderStatusRequest) returns (OrderStatusResponse);
+  rpc UpdateOrderStatus(OrderStatusUpdate) returns (Acknowledge);
+  rpc SubscribeToOrderUpdates(OrderRequest) returns (stream OrderUpdate);
+
+  rpc CancelOrder(CancelRequest) returns (Acknowledge);
+  rpc ListRestaurantOrders(RestaurantOrdersRequest) returns (RestaurantOrdersResponse);
+  rpc SubscribeToNewOrders(RestaurantOrdersRequest) returns (stream OrderUpdate);
+}
+
+enum OrderStatus {
+  STATUS_UNSPECIFIED = 0;
+  PLACED = 1;
+  ACCEPTED = 2;
+  PREPARING = 3;
+  READY = 4;
+  CANCELLED = 5;
+}
+
+message FoodItem {
+  string name = 1;
+  int32 price = 2;
+}
+
+message Restaurant {
+  string name = 1;
+  repeated FoodItem items = 2;
+}
+
+message RestaurantRequest {}
+
+message RestaurantResponse {
+  repeated Restaurant restaurants = 1;
+}
+
+message OrderItem {
+  string name = 1;
+  int32 quantity = 2;
+}
+
+// Used both to place an order (restaurant + items) and to subscribe to an
+// existing order (order_id only), as specified in the assignment API.
+message OrderRequest {
+  string restaurant = 1;
+  repeated OrderItem items = 2;
+  string customer = 3;
+  string order_id = 4;
+}
+
+message Order {
+  string order_id = 1;
+  string restaurant = 2;
+  string customer = 3;
+  repeated OrderItem items = 4;
+  int32 total = 5;
+  OrderStatus status = 6;
+  int64 created_ms = 7;
+  int64 updated_ms = 8;
+}
+
+message OrderResponse {
+  Order order = 1;
+}
+
+message OrderStatusRequest {
+  string order_id = 1;
+}
+
+message OrderStatusResponse {
+  Order order = 1;
+}
+
+message OrderStatusUpdate {
+  string order_id = 1;
+  string restaurant = 2;   // caller identity; must own the order
+  OrderStatus new_status = 3;
+}
+
+message CancelRequest {
+  string order_id = 1;
+  string customer = 2;     // caller identity; must own the order
+}
+
+message Acknowledge {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+message RestaurantOrdersRequest {
+  string restaurant = 1;
+  bool include_completed = 2;  // false => only PLACED / ACCEPTED / PREPARING
+}
+
+message RestaurantOrdersResponse {
+  repeated Order orders = 1;
+}
+
+message OrderUpdate {
+  Order order = 1;
+  string message = 2;
+}

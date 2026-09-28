@@ -1,0 +1,4 @@
+sleep 1.5
+accept O101
+sleep 8
+exit

@@ -1,0 +1,10 @@
+sleep 1
+order Taco Town "Tacos" 1
+order Pizza House "Sushi" 1
+status O999
+order Burger Point "Cheese Burger" 1 "French Fries" 2
+sleep 1
+cancel O102
+status O102
+sleep 6
+exit

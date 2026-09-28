@@ -1,0 +1,43 @@
+[Client] Connected as customer 'alice'.
+Options:
+  1. List Restaurants   -> restaurants
+  2. Place Order        -> order <Restaurant> "<Item>" <qty> ["<Item>" <qty> ...]
+  3. Check Order Status -> status <order_id>
+  4. Track Order        -> track <order_id>
+  5. Cancel Order       -> cancel <order_id>
+  6. Exit               -> exit
+> restaurants
+[Server]
+1. Pizza House
+   - Margherita Pizza : 250
+   - Farmhouse Pizza  : 350
+   - Garlic Bread     : 150
+2. Burger Point
+   - Veg Burger    : 180
+   - Cheese Burger : 220
+   - French Fries  : 120
+3. Dosa Corner
+   - Masala Dosa   : 90
+   - Idli Vada     : 70
+   - Filter Coffee : 40
+> order Pizza House "Margherita Pizza" 1 "Garlic Bread" 2
+[Client] Order placed successfully.
+[Client] Order ID: O101
+[Client] Items: Margherita Pizza x1, Garlic Bread x2
+[Client] Total: 550
+[Client] Status: PLACED
+> track O101
+[Client] Tracking order O101...
+> sleep 5
+[Update] Order O101 : PLACED
+[Update] Order O101 : ACCEPTED
+[Update] Order O101 : PREPARING
+[Update] Order O101 : READY
+[Client] Order O101 finished; tracking stopped.
+> cancel O101
+[Error] Order O101 cannot be cancelled: it is already READY. (gRPC status: FAILED_PRECONDITION)
+> status O101
+[Client] Order O101 (Pizza House: Margherita Pizza x1, Garlic Bread x2) : READY
+> sleep 3
+> exit
+[Client] Bye.

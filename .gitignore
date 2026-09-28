@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+food_ordering_pb2.py
+food_ordering_pb2_grpc.py
+# large generated benchmark graphs (reproduce with make_datasets.sh)
+section1_q3_triangle_counting/test_data/tri_*.txt
+section1_q3_triangle_counting/work_*/
+section1_q3_triangle_counting/output*.txt
+section1_q3_triangle_counting/perf_results/dist_output_*
+*.out
+*.err
+section3_q2_food_ordering/demo/logs*/

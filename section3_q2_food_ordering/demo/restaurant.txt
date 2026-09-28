@@ -1,0 +1,12 @@
+sleep 2
+pending
+accept O101
+sleep 1
+prepare O101
+sleep 1
+ready O101
+prepare O101
+accept O102
+pending
+sleep 3
+exit

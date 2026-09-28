@@ -1,0 +1,28 @@
+[Restaurant] Logged in as 'Pizza House'.
+Options:
+  1. View Pending Orders -> pending
+  2. Accept Order        -> accept <order_id>
+  3. Start Preparing     -> prepare <order_id>
+  4. Mark Ready          -> ready <order_id>
+  5. Exit                -> exit
+> sleep 2
+[New Order] O101 from alice: Margherita Pizza x1, Garlic Bread x2 (total 550)
+> pending
+[Restaurant] Order O101 : PLACED   (Margherita Pizza x1, Garlic Bread x2; total 550)
+> accept O101
+[Restaurant] Order O101 : ACCEPTED
+> sleep 1
+> prepare O101
+[Restaurant] Order O101 : PREPARING
+> sleep 1
+> ready O101
+[Restaurant] Order O101 : READY
+> prepare O101
+[Error] Invalid order state transition: READY -> PREPARING. (gRPC status: FAILED_PRECONDITION)
+> accept O102
+[Error] Order O102 belongs to Burger Point, not 'Pizza House'. (gRPC status: PERMISSION_DENIED)
+> pending
+[Restaurant] No pending orders.
+> sleep 3
+> exit
+[Restaurant] Bye.
