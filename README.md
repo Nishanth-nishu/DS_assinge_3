@@ -17,6 +17,11 @@ bash rce_run_all.sh            # only submits SLURM jobs (nothing runs on the lo
 squeue -u $USER                # wait until empty
 bash rce_run_all.sh collect    # print results
 ```
+All job scripts use the RCE settings from the RCE wiki (`#SBATCH -A default`,
+`--qos=normal`, `--mem-per-cpu=2G`). Intermediate files are kept under `/home`, which is
+shared by the master and all compute nodes (`/scratch` and `/data0` are node-local, so
+they cannot be used for data exchanged between nodes).
+
 `rce_prep.sbatch` (installs gRPC if needed, generates stubs, runs the correctness tests,
 builds the datasets) runs first on a compute node; the triangle-counting scaling runs
 (1/2/4/8 tasks) and the 3-node gRPC demo + tests start only after it succeeds.

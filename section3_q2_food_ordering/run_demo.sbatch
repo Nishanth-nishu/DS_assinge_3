@@ -1,4 +1,7 @@
 #!/bin/bash
+#SBATCH -A default
+#SBATCH --qos=normal
+#SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=grpc_food_demo
 #SBATCH --output=food_demo_%j.out
 #SBATCH --error=food_demo_%j.err
@@ -23,8 +26,9 @@ SERVER=${NODES[0]}; CUST=${NODES[1]}; REST=${NODES[2]}
 LOG=demo/logs_${SLURM_JOB_ID}; mkdir -p "$LOG"
 echo "Server=$SERVER  Customers=$CUST  Restaurants=$REST  Port=$PORT"
 
-# --overlap lets several job steps share a node (Slurm >= 20.11)
-step() { srun --nodes=1 --ntasks=1 --overlap -w "$1" "${@:2}"; }
+# --overlap lets several job steps share a node (Slurm >= 20.11); older Slurm shares by default
+OVERLAP=""; srun --help 2>&1 | grep -q -- "--overlap" && OVERLAP="--overlap"
+step() { srun --nodes=1 --ntasks=1 $OVERLAP -w "$1" "${@:2}"; }
 
 step "$SERVER" python3 -u server.py "0.0.0.0:$PORT" > "$LOG/server.log" 2>&1 &
 SP=$!
