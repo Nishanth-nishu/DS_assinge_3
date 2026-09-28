@@ -17,8 +17,8 @@ bash rce_run_all.sh            # only submits SLURM jobs (nothing runs on the lo
 squeue -u $USER                # wait until empty
 bash rce_run_all.sh collect    # print results
 ```
-All job scripts use the RCE settings from the RCE wiki (`#SBATCH -A default`,
-`--qos=normal`, `--mem-per-cpu=2G`). Intermediate files are kept under `/home`, which is
+Job scripts use the user's default SLURM account/QoS (course accounts reject
+`-A default`) and `--mem-per-cpu=2G`. Intermediate files are kept under `/home`, which is
 shared by the master and all compute nodes (`/scratch` and `/data0` are node-local, so
 they cannot be used for data exchanged between nodes).
 

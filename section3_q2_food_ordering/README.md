@@ -112,7 +112,7 @@ python3 customer.py   localhost:50051 bob
 ssh cs3401.58@rce.iiit.ac.in                  # IIIT network / VPN
 git clone https://github.com/Nishanth-nishu/DS_assinge_3.git
 cd DS_assinge_3/section3_q2_food_ordering && ./setup.sh
-salloc -A default --qos=normal --nodes=3 --ntasks-per-node=1
+salloc --nodes=3 --ntasks-per-node=1
 scontrol show hostnames $SLURM_JOB_NODELIST   # e.g. node01 node02 node03
 
 # terminal 1

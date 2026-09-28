@@ -1,6 +1,4 @@
 #!/bin/bash
-#SBATCH -A default
-#SBATCH --qos=normal
 #SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=mr_triangles
 #SBATCH --output=triangles_%j.out

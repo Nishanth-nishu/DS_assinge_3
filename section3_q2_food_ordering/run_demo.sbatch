@@ -1,6 +1,4 @@
 #!/bin/bash
-#SBATCH -A default
-#SBATCH --qos=normal
 #SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=grpc_food_demo
 #SBATCH --output=food_demo_%j.out

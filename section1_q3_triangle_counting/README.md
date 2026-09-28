@@ -84,7 +84,7 @@ answer against `verify_sequential.py` (`correct` column in the CSV).
 
 Interactive alternative:
 ```bash
-salloc -A default --qos=normal --nodes=4 --ntasks=4
+salloc --nodes=4 --ntasks=4
 bash run_distributed.sbatch tri_medium.txt   # srun picks up the allocation
 ```
 

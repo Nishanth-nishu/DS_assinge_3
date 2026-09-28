@@ -1,6 +1,4 @@
 #!/bin/bash
-#SBATCH -A default
-#SBATCH --qos=normal
 #SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=hw3_prep
 #SBATCH --output=hw3_prep_%j.out
