@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-Sequential reference implementation used for correctness verification.
-
-    verify_sequential.py graph.txt            -> prints the triangle count
-    verify_sequential.py graph.txt --brute    -> O(V^3) brute force (tiny graphs)
-
-The fast path is the classic "forward" algorithm with (degree, id) ordering;
-the brute-force path checks every vertex triple and is completely independent
-of the MapReduce logic.
-"""
 import sys
 from itertools import combinations
 
@@ -16,7 +6,7 @@ from itertools import combinations
 def read_graph(path):
     adj = {}
     with open(path) as f:
-        f.readline()  # header "V E"
+        f.readline()
         for line in f:
             p = line.split()
             if len(p) != 2:

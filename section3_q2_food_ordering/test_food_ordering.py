@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-Automated correctness tests for the Food Ordering system.
-
-    python3 test_food_ordering.py            # starts its own server on a free port
-    python3 test_food_ordering.py host:port  # test an already-running server
-
-Covers: listing, placing orders, full lifecycle, streaming updates, all six
-exception cases from the assignment (with their gRPC status codes), and
-concurrency (unique IDs under parallel PlaceOrder; exactly one winner when
-restaurants race on the same transition; concurrent subscribers).
-"""
 import sys
 import threading
 import time
@@ -58,13 +47,11 @@ def main():
     grpc.channel_ready_future(ch).result(timeout=10)
     stub = rpc.FoodOrderingServiceStub(ch)
 
-    # 1. listing
     rs = stub.ListRestaurants(pb.RestaurantRequest()).restaurants
     names = [r.name for r in rs]
     check("ListRestaurants returns predefined restaurants",
           "Pizza House" in names and "Burger Point" in names, ", ".join(names))
 
-    # 2. place order (assignment example: 250*1 + 150*2 = 550)
     o = place(stub)
     check("PlaceOrder assigns id, total, PLACED",
           o.order_id.startswith("O") and o.total == 550 and o.status == S.Value("PLACED"),
@@ -72,7 +59,6 @@ def main():
     check("GetOrderStatus", stub.GetOrderStatus(pb.OrderStatusRequest(order_id=o.order_id)).order.status
           == S.Value("PLACED"))
 
-    # 3. streaming: subscribe then walk through the lifecycle
     got = []
     ready = threading.Event()
 
@@ -89,7 +75,6 @@ def main():
     check("Subscriber receives PLACED->ACCEPTED->PREPARING->READY and stream closes",
           got == ["PLACED", "ACCEPTED", "PREPARING", "READY"] and not t.is_alive(), " -> ".join(got))
 
-    # 4. exception cases
     expect_code("Order from non-existent restaurant -> NOT_FOUND",
                 lambda: place(stub, rest="Taco Town"), grpc.StatusCode.NOT_FOUND)
     expect_code("Order unavailable food item -> NOT_FOUND",
@@ -120,12 +105,10 @@ def main():
     ack = stub.CancelOrder(pb.CancelRequest(order_id=o3.order_id, customer="bob"))
     check("Customer cancels PLACED order", ack.order.status == S.Value("CANCELLED"))
 
-    # 5. concurrency: 200 parallel orders -> 200 unique ids
     with ThreadPoolExecutor(32) as ex:
         ids = list(ex.map(lambda i: place(stub, cust=f"c{i}").order_id, range(200)))
     check("200 concurrent PlaceOrder calls get unique order IDs", len(set(ids)) == 200)
 
-    # 6. race: 20 threads try to ACCEPT the same order -> exactly one succeeds
     o4 = place(stub)
     wins, fails = [], []
     barrier = threading.Barrier(20)
@@ -144,7 +127,6 @@ def main():
           len(wins) == 1 and all(c == grpc.StatusCode.FAILED_PRECONDITION for c in fails),
           f"wins={len(wins)} failed_precondition={len(fails)}")
 
-    # 7. race: cancel vs accept on the same PLACED order -> exactly one wins
     ok = 0
     for _ in range(20):
         o5 = place(stub)
@@ -170,7 +152,6 @@ def main():
         ok += len(res) == 1 and final == {"A": "ACCEPTED", "C": "CANCELLED"}[res[0]]
     check("Cancel-vs-accept race (20 trials): exactly one wins, state consistent", ok == 20, f"{ok}/20")
 
-    # 8. multiple concurrent subscribers on one order all see every update
     o6 = place(stub)
     seen = [[] for _ in range(5)]
     started = threading.Barrier(6)
@@ -192,7 +173,6 @@ def main():
     check("5 concurrent subscribers each receive all 4 states",
           all(v == ["PLACED", "ACCEPTED", "PREPARING", "READY"] for v in seen))
 
-    # 9. restaurant new-order push + pending list
     pushed = []
     ev = threading.Event()
 

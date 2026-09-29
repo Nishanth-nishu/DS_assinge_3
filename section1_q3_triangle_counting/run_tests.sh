@@ -1,12 +1,11 @@
 #!/bin/bash
-# Correctness tests: MapReduce pipeline vs. sequential / brute-force reference.
 set -u
 cd "$(dirname "$0")"
 export LC_ALL=C
 TMP=$(mktemp -d)
 pass=0; fail=0
 
-check() {  # name graph_file expected
+check() {
   local got
   ./run_local.sh "$2" "$TMP/out" >/dev/null
   got=$(cat "$TMP/out")

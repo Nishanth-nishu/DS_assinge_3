@@ -1,9 +1,3 @@
-"""
-Generates food_ordering_pb2.py / food_ordering_pb2_grpc.py from the .proto
-on first import (or when the .proto is newer), using the grpcio-tools that is
-installed on the machine. Generating locally avoids protobuf
-gencode/runtime version mismatches between machines (e.g. laptop vs. RCE).
-"""
 import os
 import sys
 
@@ -30,7 +24,7 @@ def ensure():
 
 
 ensure()
-import food_ordering_pb2 as pb  # noqa: E402
-import food_ordering_pb2_grpc as rpc  # noqa: E402
+import food_ordering_pb2 as pb
+import food_ordering_pb2_grpc as rpc
 
 STATUS_NAME = {v: k for k, v in pb.OrderStatus.items()}

@@ -9,29 +9,15 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:05:00
 
-# ============================================================
-# Non-interactive, multi-node demo of the Food Ordering system on RCE.
-#   node 1 : gRPC server             (0.0.0.0:$PORT)
-#   node 2 : customers alice + bob   (connect to <node1>:$PORT)
-#   node 3 : restaurants Pizza House + Burger Point
-# Clients replay the command scripts in demo/*.txt. Logs -> demo/logs_<jobid>/
-#
-#   sbatch run_demo.sbatch            (run ./setup.sh once on the login node first)
-# ============================================================
 cd "${SLURM_SUBMIT_DIR:-$(dirname "$0")}"
-# PORT=0 (default): the server binds a free port chosen by the OS and reports it via a
-# port file on the shared filesystem. A fixed port (e.g. 50051) can already be taken
-# on a shared compute node by another user's server -> bind fails / wrong server answers.
 PORT=${PORT:-0}
 mapfile -t NODES < <(scontrol show hostnames "$SLURM_JOB_NODELIST")
 SERVER=${NODES[0]}; CUST=${NODES[1]}; REST=${NODES[2]}
 LOG=demo/logs_${SLURM_JOB_ID}; mkdir -p "$LOG"
 
-# --overlap lets several job steps share a node (Slurm >= 20.11); older Slurm shares by default
 OVERLAP=""; srun --help 2>&1 | grep -q -- "--overlap" && OVERLAP="--overlap"
 step() { srun --nodes=1 --ntasks=1 $OVERLAP -w "$1" "${@:2}"; }
 
-# start_server <port-file> [server.py args...] : launches on $SERVER, waits for the port file
 start_server() {
   local pf=$1; shift; rm -f "$pf"
   step "$SERVER" python3 -u server.py "0.0.0.0:$PORT" --port-file "$pf" "$@" &
@@ -59,7 +45,6 @@ for f in server restaurant_pizza restaurant_burger customer_alice customer_bob; 
   echo "================= $f ($LOG/$f.log) ================="; cat "$LOG/$f.log"
 done
 
-# Automated correctness + concurrency tests, client on another node than the server
 start_server "$LOG/test_server.port" --quiet || exit 1
 TP=$SRV_PID
 echo "================= test_food_ordering.py ($CUST -> $SERVER:$SRV_PORT) ================="

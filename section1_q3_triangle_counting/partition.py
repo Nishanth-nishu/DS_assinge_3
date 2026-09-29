@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""
-Hash partitioner used by the SLURM (non-Hadoop) distributed driver.
-
-    partition.py <num_reducers> <output_prefix>
-
-Reads key<TAB>value lines on stdin and appends each line to
-"<output_prefix>_p<r>" where r = crc32(key) mod num_reducers.
-
-This plays the role of Hadoop's HashPartitioner: all values for one key end
-up at the same reducer. crc32 is used (not Python's hash()) because it is
-deterministic across processes and nodes.
-"""
 import sys
 import zlib
 

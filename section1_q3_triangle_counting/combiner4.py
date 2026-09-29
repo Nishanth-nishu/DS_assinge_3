@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-Job 4 - Combiner (optional, map-side): pre-aggregate wedge counts per edge id.
-
-Input : sorted "a,b<TAB>$" / "a,b<TAB><count>" lines of ONE mapper.
-Output: at most one "$" and one "<count>" line per key.
-
-Reduces shuffle volume when the same closing edge is the target of many
-wedges (common around hubs). It is associative, so it is safe to run zero,
-one or many times.
-"""
 import sys
 
 

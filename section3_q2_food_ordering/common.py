@@ -1,4 +1,3 @@
-"""Shared helpers for customer.py and restaurant.py."""
 import sys
 import threading
 
@@ -10,7 +9,6 @@ _print_lock = threading.Lock()
 
 
 def say(msg, prompt=False):
-    """Thread-safe print; background streams use prompt=True to redraw '> '."""
     with _print_lock:
         if prompt and sys.stdin.isatty():
             sys.stdout.write("\r" + msg + "\n> ")
@@ -51,7 +49,6 @@ def print_restaurants(resp, who="[Server]"):
 
 
 def read_commands(prompt="> "):
-    """Yield input lines; works interactively and with piped scripts."""
     while True:
         try:
             if sys.stdin.isatty():
@@ -62,7 +59,7 @@ def read_commands(prompt="> "):
                     return
                 line = line.rstrip("\n")
                 if line.strip():
-                    say(f"{prompt}{line}")   # echo scripted commands
+                    say(f"{prompt}{line}")
         except (EOFError, KeyboardInterrupt):
             return
         yield line.strip()

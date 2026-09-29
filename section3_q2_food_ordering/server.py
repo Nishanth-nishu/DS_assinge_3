@@ -1,29 +1,4 @@
 #!/usr/bin/env python3
-"""
-gRPC Food Ordering Server.
-
-    python3 server.py [address]            default address 0.0.0.0:50051
-    python3 server.py localhost:50051
-    python3 server.py 0.0.0.0:50051 --max-workers 64 --quiet
-
-State (all in memory):
-  RESTAURANTS  : predefined, read-only -> no locking needed
-  orders       : order_id -> Order          (guarded by self._lock)
-  order_subs   : order_id -> [Queue, ...]   (guarded by self._lock)
-  new_order_subs: restaurant -> [Queue, ...](guarded by self._lock)
-
-Concurrency model
-  * grpc.server uses a thread pool, so many RPCs run in parallel.
-  * Every read-modify-write of order state (id generation, validation of a
-    status transition, the transition itself and the fan-out to subscriber
-    queues) happens inside ONE critical section on self._lock. Two
-    restaurants/customers racing on the same order are therefore serialised:
-    exactly one transition wins, the other sees the new state and gets
-    FAILED_PRECONDITION.
-  * Streaming RPCs never hold the lock while blocked: each subscriber owns a
-    thread-safe queue.Queue that the writer pushes snapshots into. A slow
-    subscriber cannot stall writers or other subscribers.
-"""
 import argparse
 import os
 import queue
@@ -42,12 +17,11 @@ RESTAURANTS = {
 }
 
 S = pb.OrderStatus
-# Allowed transitions and who may perform them.
 RESTAURANT_TRANSITIONS = {
     (S.Value("PLACED"), S.Value("ACCEPTED")),
     (S.Value("ACCEPTED"), S.Value("PREPARING")),
     (S.Value("PREPARING"), S.Value("READY")),
-    (S.Value("PLACED"), S.Value("CANCELLED")),   # restaurant rejects the order
+    (S.Value("PLACED"), S.Value("CANCELLED")),
 }
 TERMINAL = {S.Value("READY"), S.Value("CANCELLED")}
 ACTIVE = {S.Value("PLACED"), S.Value("ACCEPTED"), S.Value("PREPARING")}
@@ -58,7 +32,6 @@ def now_ms():
 
 
 def _canon(name, choices):
-    """Case/whitespace-insensitive lookup of a restaurant or item name."""
     key = " ".join(name.split()).lower()
     for c in choices:
         if c.lower() == key:
@@ -75,7 +48,6 @@ class FoodOrderingServicer(rpc.FoodOrderingServiceServicer):
         self._new_order_subs = {}
         self._verbose = verbose
 
-    # ------------------------------------------------------------ helpers --
     def _log(self, msg):
         if self._verbose:
             print(f"[Server] {msg}", flush=True)
@@ -92,12 +64,10 @@ class FoodOrderingServicer(rpc.FoodOrderingServiceServicer):
         return order
 
     def _publish_locked(self, order, message):
-        """Fan out a snapshot to every subscriber of this order (lock held)."""
         upd = pb.OrderUpdate(order=self._snapshot(order), message=message)
         for q in self._order_subs.get(order.order_id, []):
             q.put(upd)
 
-    # ------------------------------------------------------------ RPCs -----
     def ListRestaurants(self, request, context):
         resp = pb.RestaurantResponse()
         for name, menu in RESTAURANTS.items():
@@ -213,7 +183,7 @@ class FoodOrderingServicer(rpc.FoodOrderingServiceServicer):
                     continue
                 yield upd
                 if upd.order.status in TERMINAL:
-                    return          # order finished -> close the stream
+                    return
         finally:
             with self._lock:
                 subs = self._order_subs.get(oid, [])
@@ -250,9 +220,9 @@ def serve(address, max_workers=64, verbose=True, block=True, port_file=None):
     if port == 0:
         raise SystemExit(f"Could not bind to {address}")
     server.start()
-    if address.rsplit(":", 1)[-1] == "0":            # port 0 -> OS picked a free port
+    if address.rsplit(":", 1)[-1] == "0":
         address = f"{address.rsplit(':', 1)[0]}:{port}"
-    if port_file:                                     # lets job scripts discover the port
+    if port_file:
         with open(port_file + ".tmp", "w") as f:
             f.write(f"{port}\n")
         os.replace(port_file + ".tmp", port_file)

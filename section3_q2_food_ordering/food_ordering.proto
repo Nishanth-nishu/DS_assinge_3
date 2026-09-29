@@ -2,14 +2,6 @@ syntax = "proto3";
 
 package food;
 
-// ---------------------------------------------------------------------------
-// Food Ordering Service
-//   Required RPCs : ListRestaurants, PlaceOrder, GetOrderStatus,
-//                   UpdateOrderStatus, SubscribeToOrderUpdates
-//   Extra RPCs    : CancelOrder              (customer "Cancel Order" option)
-//                   ListRestaurantOrders     (restaurant "View Pending Orders")
-//                   SubscribeToNewOrders     (restaurant gets new orders pushed)
-// ---------------------------------------------------------------------------
 service FoodOrderingService {
   rpc ListRestaurants(RestaurantRequest) returns (RestaurantResponse);
   rpc PlaceOrder(OrderRequest) returns (OrderResponse);
@@ -52,8 +44,6 @@ message OrderItem {
   int32 quantity = 2;
 }
 
-// Used both to place an order (restaurant + items) and to subscribe to an
-// existing order (order_id only), as specified in the assignment API.
 message OrderRequest {
   string restaurant = 1;
   repeated OrderItem items = 2;
@@ -86,13 +76,13 @@ message OrderStatusResponse {
 
 message OrderStatusUpdate {
   string order_id = 1;
-  string restaurant = 2;   // caller identity; must own the order
+  string restaurant = 2;
   OrderStatus new_status = 3;
 }
 
 message CancelRequest {
   string order_id = 1;
-  string customer = 2;     // caller identity; must own the order
+  string customer = 2;
 }
 
 message Acknowledge {
@@ -103,7 +93,7 @@ message Acknowledge {
 
 message RestaurantOrdersRequest {
   string restaurant = 1;
-  bool include_completed = 2;  // false => only PLACED / ACCEPTED / PREPARING
+  bool include_completed = 2;
 }
 
 message RestaurantOrdersResponse {

@@ -1,11 +1,4 @@
 #!/bin/bash
-# ============================================================
-# Optional: the same 4-job pipeline on a real Hadoop cluster (Hadoop Streaming).
-#
-#   ./run_hadoop.sh <local_graph_file> [num_reducers]
-#
-# Needs HADOOP_HOME (or `hadoop` on PATH) and HDFS/YARN running.
-# ============================================================
 set -euo pipefail
 cd "$(dirname "$0")"
 IN=${1:?usage: run_hadoop.sh graph.txt [reducers]}
@@ -16,7 +9,7 @@ STREAM_JAR=$(ls "${HADOOP_HOME:-/usr/local/hadoop}"/share/hadoop/tools/lib/hadoo
 hdfs dfs -mkdir -p "$HD"
 tail -n +2 "$IN" | hdfs dfs -put -f - "$HD/edges.txt"
 
-job() {  # name mapper combiner reducer in out
+job() {
   local comb=() files="$2,$4"
   if [ -n "$3" ]; then comb=(-combiner "python3 $3"); files="$files,$3"; fi
   hadoop jar "$STREAM_JAR" \

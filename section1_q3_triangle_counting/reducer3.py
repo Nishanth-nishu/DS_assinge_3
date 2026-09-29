@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-Job 3 - Reducer: generate wedges (open triads) at each vertex.
-
-Input : "v<TAB>h" oriented edges (v has lower rank than h), grouped by v.
-Output: two kinds of records, both keyed by a canonical edge id "a,b":
-          "a,b<TAB>$"  - edge (v,h) exists  (one per oriented edge)
-          "a,b<TAB>1"  - a wedge a <- v -> b was found; the triangle
-                         {v,a,b} exists iff edge (a,b) exists.
-
-Job 4 joins the two on the edge id.
-"""
 import sys
 
 

@@ -1,6 +1,4 @@
 #!/bin/bash
-# Scripted multi-client demo on ONE machine (4 client processes + server).
-# Logs are written to demo/logs/. For the cluster version see run_demo.sbatch.
 cd "$(dirname "$0")"
 PORT=${1:-50051}
 mkdir -p demo/logs

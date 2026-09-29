@@ -1,14 +1,4 @@
 #!/usr/bin/env python3
-"""
-Job 4 - Reducer: close wedges and count triangles.
-
-Input : "a,b<TAB>$" and "a,b<TAB><count>" grouped by edge id.
-Output: a single line "triangles<TAB><partial count>" for this reducer.
-
-For each edge id, if the edge exists ("$" seen) every wedge that points at it
-is a real triangle. Each triangle produces exactly one wedge (at its
-lowest-ranked vertex, see reducer2.py), so the sum is exact.
-"""
 import sys
 
 

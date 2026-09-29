@@ -9,23 +9,6 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:30:00
 
-# ============================================================
-# Distributed MapReduce Triangle Counting - SLURM driver
-#
-#   sbatch run_distributed.sbatch [file1 file2 ...]      (files in test_data/)
-#   sbatch --nodes=2 --ntasks=8 run_distributed.sbatch    (change parallelism)
-#
-# Every job runs as two distributed phases on $NT SLURM tasks:
-#   MAP    : task t reads input split t -> mapper [-> sort -> combiner]
-#            -> hash partition into $NT buckets   (j<J>_m<t>_p<r>)
-#   REDUCE : task r gathers bucket r from all mappers -> sort -> reducer
-#            (j<J>_out_<r>)
-# i.e. a real map / shuffle(hash-partition) / sort / reduce, with the
-# shared home filesystem acting as the "DFS" between nodes.
-#
-# Without SLURM (no srun) the tasks are run as local background processes,
-# so the same script can be tested on a laptop.
-# ============================================================
 set -uo pipefail
 export LC_ALL=C
 
@@ -50,7 +33,6 @@ else TEST_FILES=(sample.txt tri_small.txt tri_medium.txt tri_large.txt tri_power
 USE_SRUN=0
 if [ -n "${SLURM_JOB_ID:-}" ] && command -v srun >/dev/null 2>&1; then USE_SRUN=1; fi
 
-# run a command string on NT parallel tasks; $SLURM_PROCID = task id
 launch() {
   if [ "$USE_SRUN" = 1 ]; then
     srun --ntasks="$NT" --kill-on-bad-exit=1 bash -c "$1"
@@ -64,8 +46,6 @@ launch() {
 now() { date +%s%N; }
 secs() { echo "scale=6; ($2 - $1) / 1000000000" | bc; }
 
-# ---- generic MapReduce job ---------------------------------------------
-# run_job J MAPPER COMBINER(or "") REDUCER IN_PREFIX   -> sets MAP_T, RED_T
 run_job() {
   export J=$1 MAPPER=$2 COMBINER=$3 REDUCER=$4 IN_PREFIX=$5
   local s e
@@ -111,7 +91,6 @@ for TEST_FILE in "${TEST_FILES[@]}"; do
   rm -f "$WORK"/*
   TOTAL_START=$(now)
 
-  # Setup: strip header, split edge list into NT line-aligned chunks (the "DFS blocks")
   s=$(now)
   tail -n +2 "$INPUT_PATH" > "$WORK/edges.txt"
   split -d -a 2 -n l/"$NT" "$WORK/edges.txt" "$WORK/j0_out_"

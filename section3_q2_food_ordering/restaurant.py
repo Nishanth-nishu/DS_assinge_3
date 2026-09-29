@@ -1,22 +1,4 @@
 #!/usr/bin/env python3
-"""
-Restaurant client (CLI).
-
-    python3 restaurant.py <server_host:port> "<Restaurant Name>" [--no-watch]
-
-Menu options (type the number or the command):
-  1  pending              View Pending Orders (PLACED / ACCEPTED / PREPARING)
-  2  accept  <order_id>   Accept Order        (PLACED    -> ACCEPTED)
-  3  prepare <order_id>   Start Preparing     (ACCEPTED  -> PREPARING)
-  4  ready   <order_id>   Mark Ready          (PREPARING -> READY)
-  5  exit                 Exit
-     all                  all orders incl. completed
-     reject <order_id>    PLACED -> CANCELLED
-     sleep <sec>, help
-
-By default a background thread subscribes to SubscribeToNewOrders so new
-orders are pushed to the restaurant as soon as customers place them.
-"""
 import shlex
 import sys
 import threading

@@ -1,5 +1,4 @@
 #!/bin/bash
-# Reproducible benchmark datasets (fixed seeds). Output goes to test_data/.
 set -e
 cd "$(dirname "$0")"
 mkdir -p test_data

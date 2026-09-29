@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-Job 1 - Reducer: compute the degree of every vertex.
-
-Input : "x<TAB>y" lines grouped (sorted) by x.
-Output: for every distinct neighbour y of x, one record keyed by the
-        canonical edge id "min(x,y),max(x,y)" carrying "x deg(x)".
-
-Duplicate edges in the input are removed here (neighbours kept in a set),
-so an edge listed twice (e.g. "0 1" and "1 0") is not counted twice.
-Job 2 then sees exactly two records per edge: one from each endpoint.
-"""
 import sys
 
 

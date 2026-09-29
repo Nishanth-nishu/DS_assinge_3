@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""
-Reproducible undirected-graph generator in the assignment input format.
-
-    gen_graph.py V E [--seed S] [--model er|powerlaw] > graph.txt
-
-  er       : Erdos-Renyi style, E distinct edges chosen uniformly.
-  powerlaw : preferential-attachment style (skewed degrees, many triangles
-             around hubs) - a harder case for triangle counting.
-
-Output: "V E" on the first line, then E lines "u v" (u != v, no duplicates).
-"""
 import argparse
 import random
 import sys
@@ -35,7 +24,7 @@ def main():
             if u != v:
                 edges.add((u, v) if u < v else (v, u))
     else:
-        targets = [0, 1]  # endpoint list => sampling proportional to degree
+        targets = [0, 1]
         while len(edges) < E:
             u = rng.randrange(V)
             v = rng.choice(targets) if rng.random() < 0.8 else rng.randrange(V)
@@ -50,7 +39,6 @@ def main():
     edges = list(edges)
     rng.shuffle(edges)
     for u, v in edges:
-        # randomise direction so both orientations appear in the input
         if rng.random() < 0.5:
             u, v = v, u
         out.write(f"{u} {v}\n")

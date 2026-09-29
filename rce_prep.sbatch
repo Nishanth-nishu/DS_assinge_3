@@ -8,17 +8,11 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:15:00
-# Runs on a COMPUTE node: installs gRPC (if missing), generates stubs,
-# runs the correctness tests and generates the benchmark datasets.
 set -e
 ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 cd "$ROOT"
 echo "Node: $(hostname)   $(python3 --version)   repo: $(git rev-parse --short HEAD 2>/dev/null)"
 
-# RCE compute nodes run Python 3.6.8 with an old pip that cannot use manylinux2014
-# wheels and falls back to compiling grpcio from source (runs out of memory).
-# -> upgrade pip (21.3.1 is the last for py3.6) and install prebuilt wheels only:
-#    grpcio / grpcio-tools 1.48.2 are the last releases with cp36 wheels.
 python3 -c "import grpc, grpc_tools" 2>/dev/null || {
   echo "== installing gRPC wheels (py3.6)"
   python3 -m pip install --user --quiet --upgrade "pip<22"

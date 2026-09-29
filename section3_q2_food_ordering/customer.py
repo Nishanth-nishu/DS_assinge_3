@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-"""
-Customer client (CLI).
-
-    python3 customer.py <server_host:port> [customer_name]
-
-Menu options (type the number or the command):
-  1  restaurants                                  List Restaurants
-  2  order <Restaurant> "<Item>" <qty> ...        Place Order
-  3  status <order_id>                            Check Order Status
-  4  track <order_id>                             Track Order (live stream)
-  5  cancel <order_id>                            Cancel Order
-  6  exit                                         Exit
-     sleep <sec>, help
-
-`track` runs the server-streaming RPC in a background thread, so the customer
-keeps using the CLI while updates arrive.
-"""
 import shlex
 import sys
 import threading
@@ -42,15 +25,12 @@ class Customer:
         self.tracking = {}
         self._restaurants = None
 
-    # ---------------------------------------------------------------------
     def restaurants(self):
         resp = self.stub.ListRestaurants(pb.RestaurantRequest())
         self._restaurants = [r.name for r in resp.restaurants]
         print_restaurants(resp)
 
     def _split_order_args(self, toks):
-        """Split `Pizza House "Margherita Pizza" 1 "Garlic Bread" 2` into
-        restaurant + (item, qty) pairs; restaurant may be unquoted."""
         if self._restaurants is None:
             self._restaurants = [r.name for r in self.stub.ListRestaurants(pb.RestaurantRequest()).restaurants]
         known = {r.lower() for r in self._restaurants}
@@ -67,7 +47,7 @@ class Customer:
         return " ".join(toks[:pick]), [(rest[i], int(rest[i + 1])) for i in range(0, len(rest), 2)]
 
     def order(self, toks):
-        if not toks:  # interactive mode
+        if not toks:
             rname = input("Restaurant: ").strip()
             items = []
             while True:
@@ -95,7 +75,6 @@ class Customer:
         if oid in self.tracking and self.tracking[oid].is_alive():
             say(f"[Client] Already tracking {oid}.")
             return
-        # Validate synchronously so NOT_FOUND is reported immediately.
         self.stub.GetOrderStatus(pb.OrderStatusRequest(order_id=oid))
         say(f"[Client] Tracking order {oid}...")
 
@@ -116,7 +95,6 @@ class Customer:
         ack = self.stub.CancelOrder(pb.CancelRequest(order_id=oid, customer=self.name))
         say(f"[Client] {ack.message}")
 
-    # ---------------------------------------------------------------------
     def loop(self):
         say(f"[Client] Connected as customer '{self.name}'.\n{HELP}")
         for line in read_commands():
