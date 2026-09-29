@@ -128,8 +128,24 @@ Use `0.0.0.0:PORT` for the server and `<server-node>:PORT` for clients (not
 ### RCE cluster – batch demo
 ```bash
 sbatch run_demo.sbatch        # server on node 1, 2 customers on node 2, 2 restaurants on node 3
-cat food_demo_<jobid>.out     # all five logs, also in demo/logs_<jobid>/
+cat food_demo_<jobid>.out     # all five logs + test results, also in demo/logs_<jobid>/
 ```
+(`bash ../rce_run_all.sh` submits it automatically after the prep job, which installs
+gRPC and generates the stubs.)
+
+**Ports on shared nodes.** By default the batch demo starts the server on port `0`: the
+OS assigns a free port, and `server.py --port-file` writes it to `demo/logs_<jobid>/*.port`
+on the shared home directory. The clients (on the other nodes) read the port from there.
+The first RCE run (job 99472) used the fixed ports 50051/50052 and failed, because
+another user's gRPC server was already listening on node01:
+
+```
+server.log : bind: Address already in use (errno 98) ... Failed to bind to address 0.0.0.0:50051
+clients    : StatusCode.UNIMPLEMENTED "Method not found!"  (they reached the other server)
+```
+
+Choosing the port at run time makes that collision impossible. A fixed port can still
+be forced with `PORT=50051 sbatch run_demo.sbatch`.
 
 ### Tests
 ```bash

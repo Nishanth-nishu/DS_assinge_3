@@ -25,6 +25,7 @@ Concurrency model
     subscriber cannot stall writers or other subscribers.
 """
 import argparse
+import os
 import queue
 import threading
 import time
@@ -241,7 +242,7 @@ class FoodOrderingServicer(rpc.FoodOrderingServiceServicer):
                     subs.remove(q)
 
 
-def serve(address, max_workers=64, verbose=True, block=True):
+def serve(address, max_workers=64, verbose=True, block=True, port_file=None):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
     servicer = FoodOrderingServicer(verbose=verbose)
     rpc.add_FoodOrderingServiceServicer_to_server(servicer, server)
@@ -249,6 +250,12 @@ def serve(address, max_workers=64, verbose=True, block=True):
     if port == 0:
         raise SystemExit(f"Could not bind to {address}")
     server.start()
+    if address.rsplit(":", 1)[-1] == "0":            # port 0 -> OS picked a free port
+        address = f"{address.rsplit(':', 1)[0]}:{port}"
+    if port_file:                                     # lets job scripts discover the port
+        with open(port_file + ".tmp", "w") as f:
+            f.write(f"{port}\n")
+        os.replace(port_file + ".tmp", port_file)
     if verbose:
         print(f"[Server] Food Ordering Server listening on {address} "
               f"(thread pool = {max_workers})", flush=True)
@@ -270,5 +277,6 @@ if __name__ == "__main__":
     ap.add_argument("--max-workers", type=int, default=64,
                     help="thread-pool size (each open stream holds one thread)")
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--port-file", help="write the bound port here (use with port 0)")
     a = ap.parse_args()
-    serve(a.address, a.max_workers, verbose=not a.quiet)
+    serve(a.address, a.max_workers, verbose=not a.quiet, port_file=a.port_file)
