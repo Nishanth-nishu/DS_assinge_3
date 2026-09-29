@@ -243,7 +243,66 @@ Four clients run concurrently against one server (Pizza House, Burger Point, ali
 [Client] Order O102 : CANCELLED
 ```
 
-## Correctness verification (`test_food_ordering.py`, 20/20 pass)
+## RCE cluster run (job 100177, 3 nodes – `demo/sample_logs_rce/`)
+
+`sbatch run_demo.sbatch` on the `debug` partition. **Server on node01**, customers alice + bob
+on **node02**, restaurants Pizza House + Burger Point on **node03**. All clients reach the
+server over the cluster network at `node01:33015` (a port assigned by the OS; see
+*Ports on shared nodes* above).
+
+**Server log.** Two customers and two restaurants on different nodes, all served
+concurrently:
+```
+[Server] Food Ordering Server listening on 0.0.0.0:33015 (thread pool = 64)
+[Server] Order O101 PLACED at Pizza House by alice (total 550)
+[Server] Subscriber attached to O101
+[Server] Order O102 PLACED at Burger Point by bob (total 460)
+[Server] Order O101: PLACED -> ACCEPTED (Pizza House)
+[Server] Order O102: PLACED -> CANCELLED (customer)
+[Server] Order O101: ACCEPTED -> PREPARING (Pizza House)
+[Server] Order O101: PREPARING -> READY (Pizza House)
+[Server] Subscriber detached from O101
+```
+**Real-time tracking across nodes.** alice (node02) receives every state change pushed by
+Pizza House (node03):
+```
+> track O101
+[Client] Tracking order O101...
+[Update] Order O101 : PLACED
+[Update] Order O101 : ACCEPTED
+[Update] Order O101 : PREPARING
+[Update] Order O101 : READY
+[Client] Order O101 finished; tracking stopped.
+> cancel O101
+[Error] Order O101 cannot be cancelled: it is already READY. (gRPC status: FAILED_PRECONDITION)
+```
+**New-order push to the restaurant, and ownership checks** (Pizza House / Burger Point, node03):
+```
+[New Order] O101 from alice: Margherita Pizza x1, Garlic Bread x2 (total 550)
+> prepare O101
+[Error] Invalid order state transition: READY -> PREPARING. (gRPC status: FAILED_PRECONDITION)
+> accept O102
+[Error] Order O102 belongs to Burger Point, not 'Pizza House'. (gRPC status: PERMISSION_DENIED)
+```
+**Error handling** (bob, node02):
+```
+> order Taco Town "Tacos" 1
+[Error] Restaurant 'Taco Town' does not exist. (gRPC status: NOT_FOUND)
+> order Pizza House "Sushi" 1
+[Error] Item 'Sushi' is not available at Pizza House. (gRPC status: NOT_FOUND)
+> status O999
+[Error] Order O999 does not exist. (gRPC status: NOT_FOUND)
+> cancel O102
+[Client] Order O102 : CANCELLED
+```
+**Automated tests on the cluster.** `test_food_ordering.py` ran on node02 against a fresh
+server on node01 (`node01:41159`): **passed=20 failed=0**. This includes the concurrency
+tests over the real network: 200 concurrent `PlaceOrder` calls got unique IDs, and of 20
+racing `ACCEPT` calls exactly 1 won and 19 got `FAILED_PRECONDITION`. The accept-vs-cancel
+race stayed consistent in 20/20 trials, and 5 concurrent subscribers each received all 4
+states. Full output: `demo/sample_logs_rce/tests.log`.
+
+## Correctness verification (`test_food_ordering.py`, 20/20 pass locally and on RCE)
 
 Listing; order id/total/status; full lifecycle over a stream (stream closes after
 `READY`); all exception cases with the expected status codes; **200 concurrent

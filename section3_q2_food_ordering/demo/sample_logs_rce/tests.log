@@ -1,0 +1,22 @@
+PASS  ListRestaurants returns predefined restaurants  [Pizza House, Burger Point, Dosa Corner]
+PASS  PlaceOrder assigns id, total, PLACED  [O101 total=550]
+PASS  GetOrderStatus
+PASS  Subscriber receives PLACED->ACCEPTED->PREPARING->READY and stream closes  [PLACED -> ACCEPTED -> PREPARING -> READY]
+PASS  Order from non-existent restaurant -> NOT_FOUND  [NOT_FOUND: Restaurant 'Taco Town' does not exist.]
+PASS  Order unavailable food item -> NOT_FOUND  [NOT_FOUND: Item 'Sushi' is not available at Pizza House.]
+PASS  Zero quantity -> INVALID_ARGUMENT  [INVALID_ARGUMENT: Quantity for 'Garlic Bread' must be positive.]
+PASS  Access non-existent order -> NOT_FOUND  [NOT_FOUND: Order O99999 does not exist.]
+PASS  Cancel an already ACCEPTED order -> FAILED_PRECONDITION  [FAILED_PRECONDITION: Order O102 cannot be cancelled: it is already ACCEPTED.]
+PASS  Restaurant updates another restaurant's order -> PERMISSION_DENIED  [PERMISSION_DENIED: Order O102 belongs to Pizza House, not 'Burger Point'.]
+PASS  Invalid transition ACCEPTED->READY -> FAILED_PRECONDITION  [FAILED_PRECONDITION: Invalid order state transition: ACCEPTED -> READY.]
+PASS  Invalid transition READY->PREPARING -> FAILED_PRECONDITION  [FAILED_PRECONDITION: Invalid order state transition: READY -> PREPARING.]
+PASS  Cancel someone else's order -> PERMISSION_DENIED  [PERMISSION_DENIED: Order O103 was not placed by 'mallory'.]
+PASS  Customer cancels PLACED order
+PASS  200 concurrent PlaceOrder calls get unique order IDs
+PASS  20 racing ACCEPT calls on one order: exactly 1 wins  [wins=1 failed_precondition=19]
+PASS  Cancel-vs-accept race (20 trials): exactly one wins, state consistent  [20/20]
+PASS  5 concurrent subscribers each receive all 4 states
+PASS  Restaurant is pushed new orders (SubscribeToNewOrders)
+PASS  ListRestaurantOrders shows only this restaurant's active orders
+----
+passed=20 failed=0

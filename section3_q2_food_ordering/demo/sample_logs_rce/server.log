@@ -1,0 +1,12 @@
+[Server] Food Ordering Server listening on 0.0.0.0:33015 (thread pool = 64)
+[Server]   Pizza House: Margherita Pizza (250), Farmhouse Pizza (350), Garlic Bread (150)
+[Server]   Burger Point: Veg Burger (180), Cheese Burger (220), French Fries (120)
+[Server]   Dosa Corner: Masala Dosa (90), Idli Vada (70), Filter Coffee (40)
+[Server] Order O101 PLACED at Pizza House by alice (total 550)
+[Server] Subscriber attached to O101
+[Server] Order O102 PLACED at Burger Point by bob (total 460)
+[Server] Order O101: PLACED -> ACCEPTED (Pizza House)
+[Server] Order O102: PLACED -> CANCELLED (customer)
+[Server] Order O101: ACCEPTED -> PREPARING (Pizza House)
+[Server] Order O101: PREPARING -> READY (Pizza House)
+[Server] Subscriber detached from O101

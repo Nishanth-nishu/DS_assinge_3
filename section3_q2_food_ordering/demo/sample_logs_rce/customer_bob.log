@@ -1,0 +1,29 @@
+[Client] Connected as customer 'bob'.
+Options:
+  1. List Restaurants   -> restaurants
+  2. Place Order        -> order <Restaurant> "<Item>" <qty> ["<Item>" <qty> ...]
+  3. Check Order Status -> status <order_id>
+  4. Track Order        -> track <order_id>
+  5. Cancel Order       -> cancel <order_id>
+  6. Exit               -> exit
+> sleep 1
+> order Taco Town "Tacos" 1
+[Error] Restaurant 'Taco Town' does not exist. (gRPC status: NOT_FOUND)
+> order Pizza House "Sushi" 1
+[Error] Item 'Sushi' is not available at Pizza House. (gRPC status: NOT_FOUND)
+> status O999
+[Error] Order O999 does not exist. (gRPC status: NOT_FOUND)
+> order Burger Point "Cheese Burger" 1 "French Fries" 2
+[Client] Order placed successfully.
+[Client] Order ID: O102
+[Client] Items: Cheese Burger x1, French Fries x2
+[Client] Total: 460
+[Client] Status: PLACED
+> sleep 1
+> cancel O102
+[Client] Order O102 : CANCELLED
+> status O102
+[Client] Order O102 (Burger Point: Cheese Burger x1, French Fries x2) : CANCELLED
+> sleep 6
+> exit
+[Client] Bye.
